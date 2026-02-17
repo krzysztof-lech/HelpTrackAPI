@@ -1,0 +1,23 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HelpTrackAPI.Models.Dtos
+{
+    public class UpdateUserDto
+    {
+        public int Id { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        [Required]
+        public string LastName { get; set; }
+
+        [Required]
+        public string Username { get; set; }
+
+        public string? Password { get; set; }
+
+        public Role Role { get; set; }
+    }
+
+}
