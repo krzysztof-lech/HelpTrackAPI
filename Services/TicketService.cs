@@ -65,7 +65,7 @@ namespace HelpTrackAPI.Services
             return ticket.ToDto(); 
         }
 
-        public async Task UpdateTicketAsync(int id, UpdateTicketDto updateDto, int currentUserId, Role currentRole) 
+        public async Task<TicketDto> UpdateTicketAsync(int id, UpdateTicketDto updateDto, int currentUserId, Role currentRole) 
         { 
             var existing = await _context.Tickets.FindAsync(id);
 
@@ -77,7 +77,9 @@ namespace HelpTrackAPI.Services
             
             existing.Title = updateDto.Title; 
             existing.Description = updateDto.Description; 
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
+
+            return existing.ToDto();
         }
 
         public async Task DeleteTicketAsync(int id, int currentUserId, Role currentRole) 
