@@ -3,6 +3,7 @@ using System;
 using HelpTrackAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelpTrackAPI.Migrations
 {
     [DbContext(typeof(HelpTrackContext))]
-    partial class HelpTrackContextModelSnapshot : ModelSnapshot
+    [Migration("20260302191355_AddTicketMessagesRelation")]
+    partial class AddTicketMessagesRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,70 +1,68 @@
-﻿using HelpTrackAPI.Data;
-using HelpTrackAPI.Models;
+﻿using HelpTrackAPI.Models.Dtos;
+using HelpTrackAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace HelpTrackAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TicketMessagesController : ControllerBase
     {
-        private readonly HelpTrackContext _context;
+        private readonly ITicketMessageService _service;
 
-        public TicketMessagesController(HelpTrackContext context)
-        {
-            _context = context;
+        public TicketMessagesController(ITicketMessageService service) 
+        { 
+            _service = service; 
         }
 
-        
         [HttpGet("ticket/{ticketId}")]
-        public async Task<ActionResult<IEnumerable<TicketMessage>>> GetMessages(int ticketId)
+        public async Task<IActionResult> GetMessages(int ticketId) 
         {
-            return await _context.TicketMessages
-                .Include(m => m.Author) 
-                .Where(m => m.TicketId == ticketId)
-                .OrderBy(m => m.CreatedAt)
-                .ToListAsync();
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            if (userIdString is null || role is null || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var messages = await _service.GetMessagesAsync(ticketId, userId, role); 
+            return Ok(messages); 
         }
 
-        
         [HttpPost]
-        public async Task<ActionResult<TicketMessage>> PostMessage(TicketMessage message)
+        public async Task<IActionResult> PostMessage(CreateChatMessageDto dto) 
         {
-            message.CreatedAt = DateTime.Now;
-            message.IsRead = false;
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var role = User.FindFirstValue(ClaimTypes.Role);
 
-            _context.TicketMessages.Add(message);
-            await _context.SaveChangesAsync();
+            if (userIdString is null || role is null || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized();
+            }
 
-            var result = await _context.TicketMessages
-                .Include(m => m.Author)
-                .FirstOrDefaultAsync(m => m.Id == message.Id);
-
-            return Ok(result);
+            var message = await _service.AddMessageAsync(dto, userId, role); 
+            return Ok(message); 
         }
 
         [HttpPatch("ticket/{ticketId}/mark-read")]
-        public async Task<IActionResult> MarkAsRead(int ticketId, [FromBody] MarkReadRequest request)
+        public async Task<IActionResult> MarkAsRead(int ticketId) 
         {
-            var messages = await _context.TicketMessages
-                .Where(m => m.TicketId == ticketId && m.AuthorId != request.UserId && !m.IsRead)
-                .ToListAsync();
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var role = User.FindFirstValue(ClaimTypes.Role);
 
-            foreach (var msg in messages)
+            if (userIdString is null || role is null || !int.TryParse(userIdString, out int userId))
             {
-                msg.IsRead = true;
+                return Unauthorized();
             }
 
-            await _context.SaveChangesAsync();
-
-            return Ok(new { markedCount = messages.Count });
+            var count = await _service.MarkAsReadAsync(ticketId, userId, role); 
+            return Ok(new { markedCount = count }); 
         }
     }
 
-    public class MarkReadRequest
-    {
-        public int UserId { get; set; }
-    }
 
 }

@@ -44,5 +44,7 @@ namespace HelpTrackAPI.Models
 
         [NotMapped]
         public bool HasUnreadMessages { get; set; }
+
+        public List<TicketMessage> Messages { get; set; } = new();
     }
 }
