@@ -23,10 +23,22 @@ namespace HelpTrackAPI.Services
                 .Include(t => t.AssignedToUser); 
             
             if (currentRole == Role.Employee) 
-                query = query.Where(t => t.UserId == currentUserId); 
-            
-            var tickets = await query.ToListAsync(); 
-            
+                query = query.Where(t => t.UserId == currentUserId);
+            else if (currentRole == Role.SupportAgent)
+            {
+                query = query.Where(t => t.AssignedToUserId == currentUserId || t.UserId == currentUserId);
+            }
+
+            var tickets = await query.ToListAsync();
+
+            foreach (var ticket in tickets)
+            {
+                ticket.HasUnreadMessages = await _context.TicketMessages
+                    .AnyAsync(m => m.TicketId == ticket.Id
+                                && !m.IsRead
+                                && m.AuthorId != currentUserId);
+            }
+
             return tickets.Select(t => t.ToDto());
         }
 
