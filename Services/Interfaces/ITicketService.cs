@@ -5,7 +5,7 @@ namespace HelpTrackAPI.Services.Interfaces
 {
     public interface ITicketService
     {
-        Task<IEnumerable<TicketDto>> GetTicketsAsync(int currentUserId, Role currentRole); 
+        Task<IEnumerable<TicketDto>> GetTicketsAsync(int currentUserId, Role currentRole, bool onlyMine = false); 
         Task<TicketDto?> GetTicketByIdAsync(int id, int currentUserId, Role currentRole); 
         Task<TicketDto> CreateTicketAsync(CreateTicketDto dto, int currentUserId);
         Task<TicketDto> UpdateTicketAsync(int id, UpdateTicketDto updateDto, int currentUserId, Role currentRole);

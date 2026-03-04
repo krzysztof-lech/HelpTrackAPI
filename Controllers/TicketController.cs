@@ -23,11 +23,12 @@ namespace HelpTrackAPI.Controllers
 
         // GET: api/Ticket
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TicketDto>>> GetTickets()
+        public async Task<ActionResult<IEnumerable<TicketDto>>> GetTickets([FromQuery] bool onlyMine = false)
         {
             var tickets = await _ticketService.GetTicketsAsync(
                 GetCurrentUserId(), 
-                GetCurrentUserRole()
+                GetCurrentUserRole(),
+                onlyMine
             ); 
             
             return Ok(tickets);

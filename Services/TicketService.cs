@@ -16,7 +16,7 @@ namespace HelpTrackAPI.Services
             _context = context; 
         }
 
-        public async Task<IEnumerable<TicketDto>> GetTicketsAsync(int currentUserId, Role currentRole) 
+        public async Task<IEnumerable<TicketDto>> GetTicketsAsync(int currentUserId, Role currentRole, bool onlyMine = false) 
         {
             IQueryable<Ticket> query = _context.Tickets
                 .Include(t => t.User)
@@ -26,7 +26,14 @@ namespace HelpTrackAPI.Services
                 query = query.Where(t => t.UserId == currentUserId);
             else if (currentRole == Role.SupportAgent)
             {
-                query = query.Where(t => t.AssignedToUserId == currentUserId || t.UserId == currentUserId);
+                if (onlyMine)
+                {
+                    query = query.Where(t => t.AssignedToUserId == currentUserId || t.UserId == currentUserId);
+                }
+                else
+                {
+                    query = query.Where(t => t.AssignedToUserId == currentUserId || t.UserId == currentUserId || t.AssignedToUserId == null);
+                }
             }
 
             var tickets = await query.ToListAsync();
