@@ -7,6 +7,7 @@
         public string Description { get; set; }
         public TicketStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public int UserId { get; set; }
         public UserDto User { get; set; }
         public int? AssignedToUserId { get; set; }

@@ -69,8 +69,10 @@ namespace HelpTrackAPI.Services
                 CreatedAt = DateTime.UtcNow, 
                 IsRead = false, 
                 IsFromSupport = role == "SupportAgent" 
-            }; 
-            
+            };
+
+            ticket.UpdatedAt = DateTime.UtcNow;
+
             _context.TicketMessages.Add(message); 
             await _context.SaveChangesAsync(); 
             

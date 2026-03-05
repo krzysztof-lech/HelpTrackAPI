@@ -15,6 +15,7 @@ namespace HelpTrackAPI.Mappers
                 Description = t.Description,
                 Status = t.Status,
                 CreatedAt = t.CreatedAt,
+                UpdatedAt = t.UpdatedAt,
                 UserId = t.UserId,
                 AssignedToUserId = t.AssignedToUserId,
                 HasUnreadMessages = t.HasUnreadMessages,
