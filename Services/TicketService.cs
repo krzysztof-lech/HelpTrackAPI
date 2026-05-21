@@ -38,12 +38,23 @@ namespace HelpTrackAPI.Services
 
             var tickets = await query.ToListAsync();
 
+            var ticketIds = tickets
+                .Select(t => t.Id)
+                .ToList();
+
+            var unreadTicketIds = await _context.TicketMessages
+                .Where(m =>
+                    ticketIds.Contains(m.TicketId) &&
+                    !m.IsRead &&
+                    m.AuthorId != currentUserId)
+                .Select(m => m.TicketId)
+                .Distinct()
+                .ToListAsync();
+
             foreach (var ticket in tickets)
             {
-                ticket.HasUnreadMessages = await _context.TicketMessages
-                    .AnyAsync(m => m.TicketId == ticket.Id
-                                && !m.IsRead
-                                && m.AuthorId != currentUserId);
+                ticket.HasUnreadMessages =
+                    unreadTicketIds.Contains(ticket.Id);
             }
 
             return tickets.Select(t => t.ToDto());
@@ -168,15 +179,26 @@ namespace HelpTrackAPI.Services
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
 
+            var ticketIds = tickets.Select(t => t.Id).ToList();
+
+            var unreadTicketIds = await _context.TicketMessages
+                .Where(m =>
+                    ticketIds.Contains(m.TicketId) &&
+                    !m.IsRead &&
+                    m.AuthorId != userId)
+                .Select(m => m.TicketId)
+                .Distinct()
+                .ToListAsync();
+
+            var unreadSet = unreadTicketIds.ToHashSet();
+
             foreach (var ticket in tickets)
             {
-                ticket.HasUnreadMessages = await _context.TicketMessages
-                    .AnyAsync(m => m.TicketId == ticket.Id
-                                && !m.IsRead
-                                && m.AuthorId != userId);
+                ticket.HasUnreadMessages = unreadSet.Contains(ticket.Id);
             }
 
             return tickets.Select(t => t.ToDto());
+
         }
 
     }
