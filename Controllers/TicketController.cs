@@ -133,7 +133,9 @@ namespace HelpTrackAPI.Controllers
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return userIdClaim != null ? int.Parse(userIdClaim) : 0;
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
+                throw new UnauthorizedAccessException();
+            return userId;
         }
 
         private Role GetCurrentUserRole()
