@@ -125,7 +125,7 @@ namespace HelpTrackAPI.Services
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (ticket == null)
-                throw new Exception("Ticket not found");
+                throw new KeyNotFoundException("Ticket not found");
 
             if (currentRole == Role.Employee)
                 throw new UnauthorizedAccessException();
