@@ -42,19 +42,11 @@ namespace HelpTrackAPI.Services
                 .Select(t => t.Id)
                 .ToList();
 
-            var unreadTicketIds = await _context.TicketMessages
-                .Where(m =>
-                    ticketIds.Contains(m.TicketId) &&
-                    !m.IsRead &&
-                    m.AuthorId != currentUserId)
-                .Select(m => m.TicketId)
-                .Distinct()
-                .ToListAsync();
+            var unreadSet = await GetUnreadTicketIdsAsync(ticketIds, currentUserId);
 
             foreach (var ticket in tickets)
             {
-                ticket.HasUnreadMessages =
-                    unreadTicketIds.Contains(ticket.Id);
+                ticket.HasUnreadMessages = unreadSet.Contains(ticket.Id);
             }
 
             return tickets.Select(t => t.ToDto());
@@ -181,6 +173,19 @@ namespace HelpTrackAPI.Services
 
             var ticketIds = tickets.Select(t => t.Id).ToList();
 
+            var unreadSet = await GetUnreadTicketIdsAsync(ticketIds, userId);
+
+            foreach (var ticket in tickets)
+            {
+                ticket.HasUnreadMessages = unreadSet.Contains(ticket.Id);
+            }
+
+            return tickets.Select(t => t.ToDto());
+
+        }
+
+        private async Task<HashSet<int>> GetUnreadTicketIdsAsync(List<int> ticketIds, int userId)
+        {
             var unreadTicketIds = await _context.TicketMessages
                 .Where(m =>
                     ticketIds.Contains(m.TicketId) &&
@@ -190,15 +195,7 @@ namespace HelpTrackAPI.Services
                 .Distinct()
                 .ToListAsync();
 
-            var unreadSet = unreadTicketIds.ToHashSet();
-
-            foreach (var ticket in tickets)
-            {
-                ticket.HasUnreadMessages = unreadSet.Contains(ticket.Id);
-            }
-
-            return tickets.Select(t => t.ToDto());
-
+            return unreadTicketIds.ToHashSet();
         }
 
     }
