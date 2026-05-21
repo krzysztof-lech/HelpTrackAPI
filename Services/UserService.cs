@@ -71,7 +71,7 @@ namespace HelpTrackAPI.Services
             var existing = await _context.Users.FindAsync(dto.Id); 
 
             if (existing == null) 
-                throw new Exception("User not found"); 
+                throw new KeyNotFoundException("User not found"); 
 
             if (currentRole == Role.Employee && existing.Id != currentUserId) 
                 throw new UnauthorizedAccessException(); 
@@ -97,10 +97,13 @@ namespace HelpTrackAPI.Services
         { 
             var user = await _context.Users.FindAsync(id); 
             if (user == null) 
-                throw new Exception("User not found"); 
+                throw new KeyNotFoundException("User not found");
 
-            if (currentRole == Role.Employee && user.Id != currentUserId) 
-                throw new UnauthorizedAccessException(); 
+            if (currentRole != Role.Admin)
+                throw new UnauthorizedAccessException();
+
+            if (id == currentUserId)
+                throw new InvalidOperationException("Cannot delete your own account.");
 
             _context.Users.Remove(user); 
             await _context.SaveChangesAsync(); 
