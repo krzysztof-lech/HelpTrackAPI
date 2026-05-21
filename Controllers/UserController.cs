@@ -24,7 +24,9 @@ namespace HelpTrackAPI.Controllers
 
 
         // GET: api/User
-        [HttpGet] 
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers() 
         { 
             var currentUserId = GetCurrentUserId(); 
@@ -34,7 +36,10 @@ namespace HelpTrackAPI.Controllers
         }
 
         // GET: api/User/5
-        [HttpGet("{id}")] 
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserDto>> GetUser(int id) 
         {
             var currentUserId = GetCurrentUserId(); 
@@ -50,6 +55,10 @@ namespace HelpTrackAPI.Controllers
         // POST: api/User
         [HttpPost]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<UserDto>> PostUser([FromBody] CreateUserDto dto) 
         { 
             if (!ModelState.IsValid) 
@@ -63,6 +72,11 @@ namespace HelpTrackAPI.Controllers
 
         // PUT: api/User/5
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutUser(int id, [FromBody] UpdateUserDto dto) 
         { 
             if (!ModelState.IsValid) 
@@ -97,6 +111,11 @@ namespace HelpTrackAPI.Controllers
         // DELETE: api/User/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUser(int id) 
         { 
             var currentUserId = GetCurrentUserId(); 

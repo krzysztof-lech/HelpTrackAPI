@@ -23,6 +23,8 @@ namespace HelpTrackAPI.Controllers
 
         // GET: api/Ticket
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<TicketDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<TicketDto>>> GetTickets([FromQuery] bool onlyMine = false)
         {
             var tickets = await _ticketService.GetTicketsAsync(
@@ -36,6 +38,9 @@ namespace HelpTrackAPI.Controllers
 
         // GET: api/Ticket/5
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(TicketDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<TicketDto>> GetTicket(int id)
         {
             var ticket = await _ticketService.GetTicketByIdAsync(
@@ -50,6 +55,9 @@ namespace HelpTrackAPI.Controllers
         }
 
         [HttpGet("user/{userId}")]
+        [ProducesResponseType(typeof(IEnumerable<TicketDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<TicketDto>>> GetTicketsByUserId(int userId)
         {
             var tickets = await _ticketService.GetTicketsByUserIdAsync(
@@ -64,6 +72,8 @@ namespace HelpTrackAPI.Controllers
 
         // POST: api/Ticket
         [HttpPost]
+        [ProducesResponseType(typeof(TicketDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<TicketDto>> PostTicket([FromBody] CreateTicketDto dto)
         {
             var created = await _ticketService.CreateTicketAsync(dto, GetCurrentUserId()); 
@@ -74,6 +84,10 @@ namespace HelpTrackAPI.Controllers
 
         // PUT: api/Ticket/5
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PutTicket(int id, [FromBody] UpdateTicketDto updateDto)
         {
             await _ticketService.UpdateTicketAsync(
@@ -89,6 +103,10 @@ namespace HelpTrackAPI.Controllers
 
         // DELETE: api/Ticket/5
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteTicket(int id)
         {
             await _ticketService.DeleteTicketAsync(
@@ -103,6 +121,10 @@ namespace HelpTrackAPI.Controllers
 
         [HttpPatch("{id}/status")]
         [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SupportAgent))]
+        [ProducesResponseType(typeof(TicketDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateTicketStatus(int id, [FromBody] UpdateTicketStatusDto dto)
         {
             var updated = await _ticketService.UpdateTicketStatusAsync(
@@ -118,6 +140,10 @@ namespace HelpTrackAPI.Controllers
 
         [HttpPatch("{id}/assign")]
         [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SupportAgent))]
+        [ProducesResponseType(typeof(TicketDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> AssignTicket(int id, [FromBody] AssignTicketDto dto)
         {
             var updated = await _ticketService.AssignTicketAsync(

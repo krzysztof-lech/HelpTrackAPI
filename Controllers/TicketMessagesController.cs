@@ -19,6 +19,9 @@ namespace HelpTrackAPI.Controllers
         }
 
         [HttpGet("ticket/{ticketId}")]
+        [ProducesResponseType(typeof(IEnumerable<ChatMessageDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetMessages(int ticketId) 
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -34,6 +37,9 @@ namespace HelpTrackAPI.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> PostMessage(CreateChatMessageDto dto) 
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -49,6 +55,9 @@ namespace HelpTrackAPI.Controllers
         }
 
         [HttpPatch("ticket/{ticketId}/mark-read")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> MarkAsRead(int ticketId) 
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
