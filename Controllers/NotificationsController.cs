@@ -1,64 +1,51 @@
-﻿using HelpTrackAPI.Models;
-using HelpTrackAPI.Data;
+﻿using HelpTrackAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HelpTrackAPI.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/notifications")]
+    [Route("api/[controller]")]
     public class NotificationsController : ControllerBase
     {
-        private readonly HelpTrackContext _context;
+        private readonly INotificationService _notificationService;
 
-        public NotificationsController(HelpTrackContext context)
+        public NotificationsController(INotificationService notificationService)
         {
-            _context = context;
+            _notificationService = notificationService;
         }
 
         [HttpGet("my")]
         public async Task<IActionResult> GetMyNotifications()
         {
-            if (!int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var userId))
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
                 return BadRequest("Could not read user ID.");
 
-     
-            var notifications = await _context.Notifications
-                .Where(n => n.UserId == userId)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
-
-            if (!notifications.Any())
-            {
-                var welcome = new Notification
-                {
-                    UserId = userId,
-                    Message = "Witaj w HelpTrack. Tutaj będziesz widzieć swoje powiadomienia.",
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                _context.Notifications.Add(welcome);
-                await _context.SaveChangesAsync();
-
-                notifications.Add(welcome);
-            }
-
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId);
             return Ok(notifications);
         }
 
         [HttpPost("{id}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
-            var notification = await _context.Notifications.FindAsync(id);
-            if (notification == null) return NotFound();
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
+                return BadRequest("Could not read user ID.");
 
-            notification.IsRead = true;
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            try
+            {
+                await _notificationService.MarkAsReadAsync(id, userId);
+                return Ok();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
         }
     }
 }

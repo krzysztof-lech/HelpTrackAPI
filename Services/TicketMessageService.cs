@@ -9,10 +9,12 @@ namespace HelpTrackAPI.Services
 {
     public class TicketMessageService : ITicketMessageService
     {
-        private readonly HelpTrackContext _context; 
-        public TicketMessageService(HelpTrackContext context) 
+        private readonly HelpTrackContext _context;
+        private readonly INotificationService _notificationService;
+        public TicketMessageService(HelpTrackContext context, INotificationService notificationService) 
         { 
-            _context = context; 
+            _context = context;
+            _notificationService = notificationService;
         }
 
         private bool UserHasAccessToTicket(Ticket ticket, int userId, string role) 
@@ -74,8 +76,11 @@ namespace HelpTrackAPI.Services
             ticket.UpdatedAt = DateTime.UtcNow;
 
             _context.TicketMessages.Add(message); 
-            await _context.SaveChangesAsync(); 
-            
+            await _context.SaveChangesAsync();
+
+            var preview = dto.Message.Length > 80 ? dto.Message[..80] + "..." : dto.Message;
+            await _notificationService.CreateNotificationForNewMessageAsync(dto.TicketId, userId, preview);
+
             await _context.Entry(message).Reference(m => m.Author).LoadAsync(); 
             
             return message.ToDto(); 

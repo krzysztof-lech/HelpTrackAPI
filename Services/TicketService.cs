@@ -10,10 +10,12 @@ namespace HelpTrackAPI.Services
 {
     public class TicketService : ITicketService
     {
-        private readonly HelpTrackContext _context; 
-        public TicketService(HelpTrackContext context) 
+        private readonly HelpTrackContext _context;
+        private readonly INotificationService _notificationService;
+        public TicketService(HelpTrackContext context, INotificationService notificationService) 
         { 
-            _context = context; 
+            _context = context;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<TicketDto>> GetTicketsAsync(int currentUserId, Role currentRole, bool onlyMine = false) 
@@ -79,7 +81,8 @@ namespace HelpTrackAPI.Services
             };
 
             _context.Tickets.Add(ticket); 
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
+            await _notificationService.CreateNotificationForTicketCreatedAsync(ticket.Id);
 
             await _context.Entry(ticket).Reference(t => t.User).LoadAsync();
             await _context.Entry(ticket).Reference(t => t.AssignedToUser).LoadAsync();
@@ -133,6 +136,9 @@ namespace HelpTrackAPI.Services
             ticket.AssignedToUserId = dto.AssignedToUserId;
             await _context.SaveChangesAsync();
 
+            if (dto.AssignedToUserId.HasValue)
+                await _notificationService.CreateNotificationForTicketAssignedAsync(ticket.Id, dto.AssignedToUserId.Value);
+
             return ticket.ToDto();
         }
 
@@ -155,6 +161,7 @@ namespace HelpTrackAPI.Services
 
             ticket.Status = dto.Status; 
             await _context.SaveChangesAsync();
+            await _notificationService.CreateNotificationForStatusChangedAsync(ticket.Id, currentUserId, MapStatusToPolish(ticket.Status));
 
             return ticket.ToDto();
         }
@@ -198,5 +205,14 @@ namespace HelpTrackAPI.Services
             return unreadTicketIds.ToHashSet();
         }
 
+        private string MapStatusToPolish(TicketStatus status) => status switch
+        {
+            TicketStatus.New => "Nowe",
+            TicketStatus.InProgress => "W trakcie",
+            TicketStatus.Closed => "Zamknięte",
+            _ => status.ToString()
+        };
+
     }
+
 }
